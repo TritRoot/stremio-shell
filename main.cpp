@@ -1,5 +1,10 @@
 #include <QQmlApplicationEngine>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
+#include <QQmlContext>
+#else
 #include <QtWebEngine>
+#endif
 #include <QSysInfo>
 
 #include <clocale>
@@ -66,8 +71,12 @@ int main(int argc, char **argv)
     #endif
 
     // This is really broken on Linux
-    #ifndef Q_OS_LINUX
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && !defined(Q_OS_LINUX)
     Application::setAttribute(Qt::AA_EnableHighDpiScaling);
+    #endif
+
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QtWebEngineQuick::initialize();
     #endif
 
     Application::setApplicationName("Stremio");

@@ -1,14 +1,14 @@
-import QtQuick 2.7
-import QtWebEngine 1.4
-import QtWebChannel 1.0
-import QtQuick.Window 2.2 // for Window instead of ApplicationWindow; also for Screen
-import QtQuick.Controls 1.4 // for ApplicationWindow
-import QtQuick.Dialogs 1.2
+import QtQuick
+import QtWebEngine
+import QtWebChannel
+import QtQuick.Window
+import QtQuick.Controls
+import QtQuick.Dialogs
 import com.stremio.process 1.0
 import com.stremio.screensaver 1.0
 import com.stremio.libmpv 1.0
 import com.stremio.clipboard 1.0
-import QtQml 2.2
+import QtQml
 
 import "autoupdater.js" as Autoupdater
 

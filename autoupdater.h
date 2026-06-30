@@ -17,7 +17,9 @@
 #include <QQueue>
 #include <QVector>
 #include <QProcess>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QNetworkConfigurationManager>
+#endif
 
 // Mixing C and C++ :(
 extern "C" {

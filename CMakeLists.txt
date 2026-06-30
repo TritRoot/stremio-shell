@@ -1,8 +1,19 @@
 cmake_minimum_required(VERSION 3.13)
 # set(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING "" FORCE)
 if(APPLE)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10" CACHE STRING "Minimum OS X deployment version")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum OS X deployment version")
   set(HAVE_FLAG_SEARCH_PATHS_FIRST 0)
+endif()
+
+option(STREMIO_USE_QT6 "Build with Qt 6 (required for native Apple Silicon)" OFF)
+if(APPLE AND CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
+  set(STREMIO_USE_QT6 ON)
+endif()
+
+if(STREMIO_USE_QT6)
+  set(QT_DEFAULT_MAJOR_VERSION 6)
+else()
+  set(QT_DEFAULT_MAJOR_VERSION 5)
 endif()
 
 project(stremio VERSION "4.4.183")
@@ -47,7 +58,7 @@ if(APPLE)
   set(MPV_LIBRARY_mpv ${CMAKE_CURRENT_SOURCE_DIR}/iina/deps/lib/libmpv.dylib)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,@executable_path/../Frameworks")
   add_definitions("-pipe")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -arch x86_64")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
   set(ENV{OPENSSL_ROOT_DIR} $ENV{OPENSSL_BIN_PATH})
 endif()
 
@@ -56,7 +67,11 @@ add_subdirectory(deps/singleapplication)
 
 set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
 
-find_package(Qt${QT_DEFAULT_MAJOR_VERSION} COMPONENTS Widgets Network Qml Quick WebEngine WebChannel DBus OpenGL REQUIRED)
+if(STREMIO_USE_QT6)
+  find_package(Qt6 COMPONENTS Widgets Network Qml Quick WebEngineQuick WebChannel OpenGL REQUIRED)
+else()
+  find_package(Qt5 COMPONENTS Widgets Network Qml Quick WebEngine WebChannel DBus OpenGL REQUIRED)
+endif()
 find_package(OpenSSL REQUIRED)
 find_package(MPV REQUIRED)
 
@@ -110,15 +125,22 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   ${MPV_INCLUDE_DIR}
 )
 
+set(STREMIO_QT_LIBS
+  Qt${QT_DEFAULT_MAJOR_VERSION}::Qml
+  Qt${QT_DEFAULT_MAJOR_VERSION}::Quick
+  Qt${QT_DEFAULT_MAJOR_VERSION}::Network
+  Qt${QT_DEFAULT_MAJOR_VERSION}::Widgets
+  Qt${QT_DEFAULT_MAJOR_VERSION}::WebChannel
+  Qt${QT_DEFAULT_MAJOR_VERSION}::OpenGL
+)
+if(STREMIO_USE_QT6)
+  list(APPEND STREMIO_QT_LIBS Qt6::WebEngineQuick)
+else()
+  list(APPEND STREMIO_QT_LIBS Qt5::WebEngine Qt5::DBus)
+endif()
+
 target_link_libraries(${PROJECT_NAME} LINK_PUBLIC
-  Qt5::Qml
-  Qt5::Quick
-  Qt5::Network
-  Qt5::Widgets
-  Qt5::WebEngine
-  Qt5::WebChannel
-  Qt5::DBus
-  Qt5::OpenGL
+  ${STREMIO_QT_LIBS}
   SingleApplication::SingleApplication
   OpenSSL::Crypto
   ${MPV_LIBRARY}

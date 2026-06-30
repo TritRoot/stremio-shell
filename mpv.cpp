@@ -9,10 +9,17 @@
 #include <QtGlobal>
 #include <QOpenGLContext>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QOpenGLFramebufferObject>
+#else
 #include <QtGui/QOpenGLFramebufferObject>
+#endif
 
 #include <QtQuick/QQuickWindow>
 #include <QtQuick/QQuickView>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QQuickOpenGLUtils>
+#endif
 
 #if defined(Q_OS_WIN32)
 #include <windows.h>
@@ -81,7 +88,11 @@ class MpvRenderer : public QQuickFramebufferObject::Renderer
 
     void render()
     {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        QQuickOpenGLUtils::resetOpenGLState();
+#else
         obj->window()->resetOpenGLState();
+#endif
 
         QOpenGLFramebufferObject *fbo = framebufferObject();
         mpv_opengl_fbo mpfbo{static_cast<int>(fbo->handle()), fbo->width(), fbo->height(), 0};
@@ -100,7 +111,11 @@ class MpvRenderer : public QQuickFramebufferObject::Renderer
         // other API details.
         mpv_render_context_render(obj->mpv_gl, params);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        QQuickOpenGLUtils::resetOpenGLState();
+#else
         obj->window()->resetOpenGLState();
+#endif
      }
 };
 
@@ -308,7 +323,9 @@ QVariant MpvObject::getProperty(const QString& name) {
 }
 QQuickFramebufferObject::Renderer *MpvObject::createRenderer() const
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     window()->setPersistentOpenGLContext(true);
+#endif
     window()->setPersistentSceneGraph(true);
     return new MpvRenderer(const_cast<MpvObject *>(this));
 }
