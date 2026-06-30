@@ -86,15 +86,17 @@ if(APPLE)
   find_library(COREFOUNDATION_LIBRARY NAMES CoreFoundation REQUIRED)
   find_library(DISKARBITRATION_LIBRARY DiskArbitration REQUIRED)
   find_library(IOKIT_LIBRARY NAMES IOKit REQUIRED)
-  find_library(AGL_LIBRARY NAMES AGL REQUIRED)
+  find_library(AGL_LIBRARY NAMES AGL)
   target_link_libraries(${PROJECT_NAME} LINK_PUBLIC
     ${C_LIBRARY}
     ${COREFOUNDATION_LIBRARY}
     ${DISKARBITRATION_LIBRARY}
     ${IOKIT_LIBRARY}
     ${OPENGL_LIBS}
-    ${AGL_LIBRARY}
     )
+  if(AGL_LIBRARY)
+    target_link_libraries(${PROJECT_NAME} LINK_PUBLIC ${AGL_LIBRARY})
+  endif()
 else()
   add_executable(${PROJECT_NAME} ${SOURCES})
 endif()
